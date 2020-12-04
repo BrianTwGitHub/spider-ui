@@ -6,7 +6,7 @@ import Vue from "vue";
 //load Vuex
 Vue.use(Vuex);
 //to handle state
-const state = { content: [], currentPage: 1, rows: 0 };
+const state = { content: [], currentPage: 1, rows: 0, jobAreaList: [] };
 
 //to handle state
 const getters = {};
@@ -15,10 +15,15 @@ const getters = {};
 const actions = {
   getJobs({ commit }, params) {
     axios
-      .get("http://localhost:8080/job", { params: params })
+      .get("http://localhost:8080/job/", { params: params })
       .then(response => {
         commit("GET_JOBS", response.data);
       });
+  },
+  getJobAreaList({ commit }) {
+    axios.get("http://localhost:8080/job/area/list").then(response => {
+      commit("GET_JOB_AREA_LIST", response.data);
+    });
   }
 };
 
@@ -28,6 +33,9 @@ const mutations = {
     state.content = jobs.content ? jobs.content : [];
     state.currentPage = jobs.number ? jobs.number + 1 : 1;
     state.rows = jobs.totalElements ? jobs.totalElements : 0;
+  },
+  GET_JOB_AREA_LIST(state, jobAreaList) {
+    state.jobAreaList = jobAreaList;
   }
 };
 
