@@ -27,6 +27,12 @@
             <b-form-input
               size="sm"
               class="mr-sm-2"
+              placeholder="公司名稱"
+              v-model="jobCompanyName"
+            ></b-form-input>
+            <b-form-input
+              size="sm"
+              class="mr-sm-2"
               placeholder="工作內容"
               v-model="jobContent"
             ></b-form-input>
@@ -105,6 +111,7 @@ export default {
       currentPage: 1,
       jobName: null,
       jobContent: null,
+      jobCompanyName: null,
       selectedJobArea: { jobArea: "工作地點" }
     };
   },
@@ -128,12 +135,12 @@ export default {
   },
   methods: {
     getJobs: function() {
-      console.log(this.jobName);
       this.$store.dispatch("getJobs", {
         page: this.currentPage - 1,
         size: this.perPage,
         jobName: this.jobName,
         jobContent: this.jobContent,
+        jobCompanyName: this.jobCompanyName,
         jobAreaId: this.selectedJobArea.id
       });
     },
