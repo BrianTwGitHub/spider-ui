@@ -104,7 +104,11 @@ export default {
         { key: "jobContent", label: "工作內容" },
         { key: "jobArea", label: "工作地點" },
         { key: "jobSalary", label: "薪資範圍" },
-        { key: "jobLocation", label: "工作詳細地址" },
+        {
+          key: "jobLocation",
+          label: "工作詳細地址",
+          formatter: "checkStringLength"
+        },
         { key: "jobUrl", label: "工作原始網址", formatter: "toUrlHtml" }
       ],
       perPage: 10,
