@@ -6,7 +6,13 @@ import Vue from "vue";
 //load Vuex
 Vue.use(Vuex);
 //to handle state
-const state = { content: [], currentPage: 1, rows: 0, jobAreaList: [] };
+const state = {
+  content: [],
+  currentPage: 1,
+  rows: 0,
+  jobAreaList: [],
+  readJobId: null
+};
 
 //to handle state
 const getters = {};

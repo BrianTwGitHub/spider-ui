@@ -1,7 +1,7 @@
 <template>
   <div>
     <b-navbar toggleable="lg" type="dark" variant="info">
-      <b-navbar-brand href="#">NavBar</b-navbar-brand>
+      <b-navbar-brand href="#">Jobs</b-navbar-brand>
       <b-navbar-toggle target="nav-collapse"></b-navbar-toggle>
       <b-collapse id="nav-collapse" is-nav>
         <!-- Right aligned nav items -->
@@ -12,12 +12,49 @@
                 v-for="option in jobAreaList"
                 :key="option.id"
                 :value="option.jobArea"
+                style="color:white"
                 @click="selectedJobArea = option"
               >
                 {{ option.jobArea }}
               </b-dropdown-item>
             </b-nav-item-dropdown>
-
+            <b-form-radio-group>
+              <b-form-radio
+                @change="read = null"
+                style="color:white"
+                :value="null"
+                >全部</b-form-radio
+              >
+              <b-form-radio
+                @change="read = true"
+                style="color:white"
+                :value="true"
+                >已讀</b-form-radio
+              >
+              <b-form-radio
+                @change="read = false"
+                style="color:white"
+                :value="false"
+                >未讀</b-form-radio
+              >
+            </b-form-radio-group>
+            <b-form-group size="sm" class="mr-sm-2">
+              <b-form-checkbox-group style="color:white"
+                >最愛
+                <font-awesome-icon
+                  :icon="['fas', 'heart']"
+                  @click="favorite = !favorite"
+                  v-if="favorite"
+                  style="color:red"
+                />
+                <font-awesome-icon
+                  :icon="['far', 'heart']"
+                  @click="favorite = !favorite"
+                  v-else
+                  style="color:red"
+                />
+              </b-form-checkbox-group>
+            </b-form-group>
             <b-form-input
               size="sm"
               class="mr-sm-2"
@@ -43,6 +80,14 @@
               @click="search"
               >Search</b-button
             >
+            <span v-html="'&nbsp;&nbsp;'"></span>
+            <b-button
+              size="sm"
+              class="my-2 my-sm-0"
+              type="button"
+              @click="resetSearch"
+              >Reset</b-button
+            >
           </b-nav-form>
         </b-navbar-nav>
       </b-collapse>
@@ -52,8 +97,25 @@
       :items="jobs"
       :per-page="perPage"
       :fields="fields"
+      :tbody-tr-class="rowClass"
       small
     >
+      <template #cell(favorite)="row">
+        <div>
+          <font-awesome-icon
+            :icon="['fas', 'heart']"
+            @click="updateFavorite(row.item)"
+            v-if="row.item.favorite"
+            style="color:red"
+          />
+          <font-awesome-icon
+            :icon="['far', 'heart']"
+            @click="updateFavorite(row.item)"
+            v-else
+            style="color:red"
+          />
+        </div>
+      </template>
       <template #cell(jobName)="row">
         <span :title="row.item.jobName">{{
           checkStringLength(row.item.jobName)
@@ -65,22 +127,28 @@
         }}</span>
       </template>
       <template #cell(jobContent)="row">
-        <b-button size="sm" @click="row.toggleDetails" class="mr-2">
-          {{ row.detailsShowing ? "Hide" : "Show" }} Details
+        <b-button
+          size="sm"
+          @click="info(row.item, row.index, $event.target)"
+          class="mr-1"
+        >
+          點我看工作內容
         </b-button>
       </template>
       <template #cell(jobUrl)="row">
         <span v-html="toUrlHtml(row.item.jobUrl)"></span>
       </template>
-      <template #row-details="row">
-        <b-card>
-          <b-row class="mb-2">
-            <b-col sm="3" class="text-sm-right"></b-col>
-            <span v-html="row.item.jobContent"></span>
-          </b-row>
-        </b-card>
-      </template>
     </b-table>
+    <!-- Info modal -->
+    <b-modal
+      size="lg"
+      :id="infoModal.id"
+      :title="infoModal.title"
+      ok-only
+      @hide="resetInfoModal"
+    >
+      <pre>{{ infoModal.content }}</pre>
+    </b-modal>
     <b-pagination
       v-model="currentPage"
       :total-rows="rows"
@@ -92,6 +160,7 @@
 </template>
 
 <script>
+import axios from "axios";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
 export default {
@@ -99,6 +168,7 @@ export default {
     return {
       fields: [
         { key: "jobId", label: "id" },
+        { key: "favorite", label: "最愛" },
         { key: "jobName", label: "職稱", formatter: "checkStringLength" },
         { key: "jobCompany", label: "公司" },
         { key: "jobContent", label: "工作內容" },
@@ -113,10 +183,17 @@ export default {
       ],
       perPage: 10,
       currentPage: 1,
+      favorite: null,
+      read: null,
       jobName: null,
       jobContent: null,
       jobCompanyName: null,
-      selectedJobArea: { jobArea: "工作地點" }
+      selectedJobArea: { jobArea: "工作地點" },
+      infoModal: {
+        id: "info-modal",
+        title: "",
+        content: ""
+      }
     };
   },
   computed: {
@@ -133,15 +210,24 @@ export default {
     }
   },
   watch: {
+    read(v) {
+      console.log(v);
+    },
     currentPage() {
       this.getJobs();
     }
   },
   methods: {
+    rowClass(item, type) {
+      if (!item || type !== "row") return;
+      if (item.read) return "table-success";
+    },
     getJobs: function() {
       this.$store.dispatch("getJobs", {
         page: this.currentPage - 1,
         size: this.perPage,
+        isRead: this.read,
+        isFavorite: this.favorite,
         jobName: this.jobName,
         jobContent: this.jobContent,
         jobCompanyName: this.jobCompanyName,
@@ -151,6 +237,14 @@ export default {
     search() {
       this.currentPage = 1;
       this.getJobs();
+    },
+    resetSearch() {
+      this.currentPage = 1;
+      this.favorite = null;
+      this.read = null;
+      this.jobName = null;
+      this.jobContent = null;
+      this.jobCompanyName = null;
     },
     getJobAreaList() {
       return this.$store.dispatch("getJobAreaList");
@@ -163,6 +257,30 @@ export default {
     },
     toUrlHtml(url) {
       return "<a href='" + url + "' target='_blank'>開啟網頁</a>";
+    },
+    info(item, index, button) {
+      this.infoModal.title = item.jobName;
+      this.infoModal.content = item.jobContent;
+      if (!item.read) {
+        this.readJob(item.jobId);
+        item.read = true;
+      }
+      this.$root.$emit("bv::show::modal", this.infoModal.id, button);
+    },
+    resetInfoModal() {
+      this.infoModal.title = "";
+      this.infoModal.content = "";
+    },
+    readJob(jobId) {
+      axios.post("http://localhost:8080/job/" + jobId + "/read");
+    },
+    updateFavorite(item) {
+      axios
+        .post("http://localhost:8080/job/" + item.jobId + "/favorite")
+        .then(response => {
+          item.favorite = response.data;
+          console.log(item.favorite);
+        });
     }
   },
   mounted() {
@@ -171,3 +289,59 @@ export default {
   }
 };
 </script>
+<style scoped>
+pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+label {
+  /* Presentation */
+  font-size: 48px;
+}
+
+/* Required Styling */
+
+label input[type="checkbox"] {
+  display: none;
+}
+
+.custom-checkbox {
+  margin-left: 2em;
+  position: relative;
+  cursor: pointer;
+}
+.custom-checkbox .glyphicon {
+  color: gold;
+  position: absolute;
+  top: 0.4em;
+  left: -1.25em;
+  font-size: 0.75em;
+}
+
+.custom-checkbox .glyphicon-star-empty {
+  color: gray;
+}
+
+.custom-checkbox .glyphicon-star {
+  opacity: 0;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.custom-checkbox:hover .glyphicon-star {
+  opacity: 0.5;
+}
+
+.custom-checkbox input[type="checkbox"]:checked ~ .glyphicon-star {
+  opacity: 1;
+}
+@media (min-width: 992px) {
+  .modal-lg {
+    max-width: auto !important;
+  }
+}
+@media (min-width: 576px) {
+  .modal-dialog {
+    max-width: auto !important;
+  }
+}
+</style>
