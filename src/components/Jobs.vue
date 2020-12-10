@@ -7,17 +7,35 @@
         <!-- Right aligned nav items -->
         <b-navbar-nav class="ml-auto">
           <b-nav-form>
-            <b-nav-item-dropdown :text="selectedJobArea.jobArea" right>
-              <b-dropdown-item
-                v-for="option in jobAreaList"
-                :key="option.id"
-                :value="option.jobArea"
-                style="color:white"
-                @click="selectedJobArea = option"
-              >
-                {{ option.jobArea }}
-              </b-dropdown-item>
-            </b-nav-item-dropdown>
+            <b-form-group size="md" class="mb-0">
+              <span style="width: 180px;display:inline-block;">
+                <multiselect
+                  v-model="selectedJobArea"
+                  :options="jobAreaList"
+                  :multiple="true"
+                  :selectLabel="''"
+                  :deselectLabel="''"
+                  :close-on-select="false"
+                  :clear-on-select="false"
+                  :preserve-search="true"
+                  placeholder="請選擇區域"
+                  label="jobArea"
+                  track-by="jobArea"
+                  :preselect-first="true"
+                >
+                  <template
+                    slot="selection"
+                    slot-scope="{ values, search, isOpen }"
+                    ><span
+                      class="multiselect__single"
+                      v-if="values.length &amp;&amp; !isOpen"
+                      >已選擇{{ values.length }}個區域</span
+                    ></template
+                  >
+                </multiselect>
+              </span>
+              <span v-html="'&nbsp;&nbsp;'"></span>
+            </b-form-group>
             <b-form-radio-group>
               <b-form-radio
                 @change="read = null"
@@ -132,7 +150,7 @@
           @click="info(row.item, row.index, $event.target)"
           class="mr-1"
         >
-          點我看工作內容
+          {{ row.item.jobUpdateDate }} 更新
         </b-button>
       </template>
       <template #cell(jobUrl)="row">
@@ -161,9 +179,14 @@
 
 <script>
 import axios from "axios";
+import Multiselect from "vue-multiselect";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
+import "vue-multiselect/dist/vue-multiselect.min.css";
 export default {
+  components: {
+    Multiselect
+  },
   data() {
     return {
       fields: [
@@ -188,7 +211,7 @@ export default {
       jobName: null,
       jobContent: null,
       jobCompanyName: null,
-      selectedJobArea: { jobArea: "工作地點" },
+      selectedJobArea: [],
       infoModal: {
         id: "info-modal",
         title: "",
@@ -204,9 +227,17 @@ export default {
       return this.$store.state.content;
     },
     jobAreaList() {
-      let array = [{ id: null, jobArea: "工作地點" }];
-      array = array.concat(this.$store.state.jobAreaList);
-      return array;
+      let array = this.$store.state.jobAreaList;
+      return array.sort((a, b) => {
+        if (a.name < b.name) {
+          return -1;
+        }
+        if (a.name > b.name) {
+          return 1;
+        }
+        // names must be equal
+        return 0;
+      });
     }
   },
   watch: {
@@ -231,7 +262,7 @@ export default {
         jobName: this.jobName,
         jobContent: this.jobContent,
         jobCompanyName: this.jobCompanyName,
-        jobAreaId: this.selectedJobArea.id
+        jobAreaIds: this.selectedJobArea.map(x => x.id).join()
       });
     },
     search() {
@@ -250,8 +281,8 @@ export default {
       return this.$store.dispatch("getJobAreaList");
     },
     checkStringLength(str) {
-      if (str.length > 20) {
-        str = str.substring(0, 20) + "...";
+      if (str.length > 10) {
+        str = str.substring(0, 10) + "...";
       }
       return str;
     },
@@ -289,6 +320,11 @@ export default {
   }
 };
 </script>
+<style>
+.multiselect__tags-wrap {
+  display: none;
+}
+</style>
 <style scoped>
 pre {
   white-space: pre-wrap;
