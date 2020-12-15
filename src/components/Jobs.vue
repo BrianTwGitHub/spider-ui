@@ -116,6 +116,9 @@
       :per-page="perPage"
       :fields="fields"
       :tbody-tr-class="rowClass"
+      @sort-changed="sortingChanged"
+      :no-local-sorting="true"
+      :sort-by.sync="sortKey"
       small
     >
       <template #cell(favorite)="row">
@@ -191,11 +194,16 @@ export default {
     return {
       fields: [
         { key: "jobId", label: "id" },
-        { key: "favorite", label: "最愛" },
-        { key: "jobName", label: "職稱", formatter: "checkStringLength" },
-        { key: "jobCompany", label: "公司" },
+        { key: "favorite", label: "最愛", sortable: true },
+        {
+          key: "jobName",
+          label: "職稱",
+          formatter: "checkStringLength",
+          sortable: true
+        },
+        { key: "jobCompany", label: "公司", sortable: true },
         { key: "jobContent", label: "工作內容" },
-        { key: "jobArea", label: "工作地點" },
+        { key: "jobArea", label: "工作地點", sortable: true },
         { key: "jobSalary", label: "薪資範圍" },
         {
           key: "jobLocation",
@@ -216,7 +224,9 @@ export default {
         id: "info-modal",
         title: "",
         content: ""
-      }
+      },
+      sort: null,
+      sortKey: null
     };
   },
   computed: {
@@ -254,6 +264,11 @@ export default {
       if (item.read) return "table-success";
     },
     getJobs: function() {
+      let sort = null;
+      if (this.sort != null) {
+        sort = this.sort.by + "," + (this.sort.desc ? "desc" : "asc");
+      }
+      console.log(sort);
       this.$store.dispatch("getJobs", {
         page: this.currentPage - 1,
         size: this.perPage,
@@ -262,7 +277,8 @@ export default {
         jobName: this.jobName,
         jobContent: this.jobContent,
         jobCompanyName: this.jobCompanyName,
-        jobAreaIds: this.selectedJobArea.map(x => x.id).join()
+        jobAreaIds: this.selectedJobArea.map(x => x.id).join(),
+        sort: sort
       });
     },
     search() {
@@ -276,9 +292,22 @@ export default {
       this.jobName = null;
       this.jobContent = null;
       this.jobCompanyName = null;
+      this.selectedJobArea = [];
+      this.sort = null;
+      this.sortKey = null;
+      this.getJobs();
     },
     getJobAreaList() {
       return this.$store.dispatch("getJobAreaList");
+    },
+    sortingChanged(sort) {
+      this.currentPage = sort.currentPage;
+      this.perPage = sort.perPage;
+      this.sort = {
+        by: sort.sortBy,
+        desc: sort.sortDesc
+      };
+      this.getJobs();
     },
     checkStringLength(str) {
       if (str.length > 10) {
