@@ -176,6 +176,8 @@
       :per-page="perPage"
       aria-controls="my-table"
       align="center"
+      first-number
+      last-number
     ></b-pagination>
   </div>
 </template>
@@ -268,7 +270,7 @@ export default {
       if (this.sort != null) {
         sort = this.sort.by + "," + (this.sort.desc ? "desc" : "asc");
       }
-      console.log(sort);
+
       this.$store.dispatch("getJobs", {
         page: this.currentPage - 1,
         size: this.perPage,
