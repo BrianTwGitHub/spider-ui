@@ -143,9 +143,12 @@
         }}</span>
       </template>
       <template #cell(jobCompany)="row">
-        <span :title="row.item.jobCompany">{{
-          checkStringLength(row.item.jobCompany)
-        }}</span>
+        <a
+          :href="row.item.jobCompanyUrl"
+          :title="row.item.jobCompany"
+          target="_blank"
+          >{{ checkStringLength(row.item.jobCompany) }}
+        </a>
       </template>
       <template #cell(jobContent)="row">
         <b-button
