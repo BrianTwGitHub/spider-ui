@@ -18,7 +18,9 @@
     "bootstrap": "^4.5.3",
     "bootstrap-vue": "^2.20.1",
     "core-js": "^2.6.5",
+    "element-ui": "^2.4.5",
     "register-service-worker": "^1.6.2",
+    "reset-css": "^5.0.1",
     "vue": "^2.6.12",
     "vue-axios": "^3.2.0",
     "vue-multiselect": "^2.1.6",
@@ -36,12 +38,14 @@
     "@vue/test-utils": "1.0.0-beta.29",
     "babel-eslint": "^10.0.1",
     "chai": "^4.1.2",
+    "element-theme-chalk": "^2.14.1",
     "eslint": "^5.16.0",
     "eslint-plugin-prettier": "^3.1.0",
     "eslint-plugin-vue": "^5.0.0",
     "node-sass": "^4.12.0",
     "prettier": "^1.18.2",
     "sass-loader": "^8.0.0",
+    "vue-cli-plugin-element": "^1.0.1",
     "vue-template-compiler": "^2.6.10"
   }
 }

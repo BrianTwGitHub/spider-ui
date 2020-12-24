@@ -8,6 +8,10 @@ import { library } from "@fortawesome/fontawesome-svg-core";
 import { faHeart as fasHeart } from "@fortawesome/free-solid-svg-icons";
 import { faHeart as farHeart } from "@fortawesome/free-regular-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/vue-fontawesome";
+import Element from "element-ui";
+import "./element-variables.scss";
+
+Vue.use(Element);
 
 // Install BootstrapVue
 Vue.use(BootstrapVue);

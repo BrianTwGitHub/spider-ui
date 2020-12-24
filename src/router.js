@@ -10,17 +10,29 @@ export default new Router({
   routes: [
     {
       path: "/",
-      name: "home",
+      name: "Search Jobs",
+      icon: "el-icon-search",
       component: Home
     },
     {
-      path: "/about",
-      name: "about",
+      path: "/settings",
+      name: "Settings",
+      icon: "el-icon-setting",
       // route level code-splitting
       // this generates a separate chunk (about.[hash].js) for this route
       // which is lazy-loaded when the route is visited.
       component: () =>
-        import(/* webpackChunkName: "about" */ "./views/About.vue")
+        import(/* webpackChunkName: "about" */ "./views/Settings.vue")
+    },
+    {
+      path: "/trigger",
+      name: "Trigger",
+      icon: "el-icon-loading",
+      // route level code-splitting
+      // this generates a separate chunk (about.[hash].js) for this route
+      // which is lazy-loaded when the route is visited.
+      component: () =>
+        import(/* webpackChunkName: "about" */ "./views/Trigger.vue")
     }
   ]
 });

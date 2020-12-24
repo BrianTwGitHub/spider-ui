@@ -186,7 +186,6 @@
 </template>
 
 <script>
-import axios from "axios";
 import Multiselect from "vue-multiselect";
 import "bootstrap/dist/css/bootstrap.css";
 import "bootstrap-vue/dist/bootstrap-vue.css";
@@ -315,7 +314,7 @@ export default {
       this.getJobs();
     },
     checkStringLength(str) {
-      if (str.length > 10) {
+      if (str && str.length > 10) {
         str = str.substring(0, 10) + "...";
       }
       return str;
@@ -336,16 +335,14 @@ export default {
       this.infoModal.title = "";
       this.infoModal.content = "";
     },
-    readJob(jobId) {
-      axios.post("http://localhost:8080/job/" + jobId + "/read");
+    async readJob(jobId) {
+      await this.$store.dispatch("readJob", { jobId: jobId });
     },
-    updateFavorite(item) {
-      axios
-        .post("http://localhost:8080/job/" + item.jobId + "/favorite")
-        .then(response => {
-          item.favorite = response.data;
-          console.log(item.favorite);
-        });
+    async updateFavorite(item) {
+      await this.$store.dispatch("updateFavorite", { jobId: item.jobId });
+      item.favorite = this.$store.state.favorite
+        ? !item.favorite
+        : item.favorite;
     }
   },
   mounted() {
