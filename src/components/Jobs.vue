@@ -21,7 +21,6 @@
                   placeholder="請選擇區域"
                   label="jobArea"
                   track-by="jobArea"
-                  :preselect-first="true"
                 >
                   <template
                     slot="selection"
